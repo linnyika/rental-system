@@ -20,7 +20,8 @@ return new class extends Migration
         $table->string('mpesa_reference')->unique();
         $table->date('payment_date');
         $table->enum('status', ['pending', 'verified', 'rejected'])->default('pending');
-        $table->foreignId('verified_by')->nullable()->constrained('caretakers')->nullOnDelete();
+       $table->foreignId('verified_by_caretaker')->nullable()->constrained('caretakers')->nullOnDelete();
+       $table->foreignId('verified_by_landlord')->nullable()->constrained('landlords')->nullOnDelete();
         $table->timestamp('verified_at')->nullable();
         $table->timestamps();
     });

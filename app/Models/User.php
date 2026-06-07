@@ -38,4 +38,18 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function landlord()
+{
+    return $this->hasOne(Landlord::class);
+}
+
+public function tenant()
+{
+    return $this->hasOne(Tenant::class);
+}
+
+public function caretaker()
+{
+    return $this->hasOne(Caretaker::class);
+}
 }
