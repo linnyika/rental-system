@@ -17,7 +17,8 @@ return new class extends Migration
         $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
         $table->foreignId('landlord_id')->constrained()->cascadeOnDelete();
         $table->decimal('amount', 10, 2);
-        $table->string('mpesa_reference')->unique();
+        $table->enum('method', ['mpesa', 'bank', 'cash']);
+        $table->string('reference')->nullable()->unique();
         $table->date('payment_date');
         $table->enum('status', ['pending', 'verified', 'rejected'])->default('pending');
        $table->foreignId('verified_by_caretaker')->nullable()->constrained('caretakers')->nullOnDelete();

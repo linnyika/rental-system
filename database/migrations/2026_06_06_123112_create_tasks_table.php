@@ -16,6 +16,8 @@ return new class extends Migration
         $table->foreignId('maintenance_request_id')->constrained()->cascadeOnDelete();
         $table->foreignId('caretaker_id')->constrained()->cascadeOnDelete();
         $table->enum('status', ['assigned', 'in_progress', 'done'])->default('assigned');
+        $table->boolean('tenant_confirmed')->default(false);   // add
+        $table->timestamp('completed_at')->nullable();  
         $table->timestamps();
     });
 }

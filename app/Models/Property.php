@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Property extends Model
 {
-    protected $fillable = ['landlord_id', 'name', 'address'];
+    protected $fillable = ['landlord_id', 'name', 'address', 'caretaker_id'];
 
 public function landlord()
 {
     return $this->belongsTo(Landlord::class);
+}
+
+public function caretaker()
+{
+    return $this->belongsTo(Caretaker::class);
 }
 
 public function units()

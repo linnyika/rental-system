@@ -17,6 +17,7 @@ return new class extends Migration
         $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
         $table->text('description');
         $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
+        $table->boolean('is_major')->default(false);
         $table->timestamps();
     });
 }
