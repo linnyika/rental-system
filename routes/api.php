@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\MaintenanceController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -38,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('role:tenant')->group(function () {
         Route::post('/payments', [PaymentController::class, 'store']);
         Route::get('/payments', [PaymentController::class, 'history']);
-        Route::post('/maintenance-requests', [MaintenanceController::class, 'store']);
+        Route::post('/maintenance', [MaintenanceController::class, 'store']);
     });
     });
     // Payment verification — caretaker (normal) or landlord (fallback)
@@ -47,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('role:caretaker,landlord')->group(function () {
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
         Route::post('/payments/cash', [PaymentController::class, 'storeCash']);
-        
+
     });
     });
 

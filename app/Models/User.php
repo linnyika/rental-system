@@ -13,6 +13,8 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use HasApiTokens, HasFactory, Notifiable;
+
     protected $fillable = [
         'name',
         'phone',
@@ -24,13 +26,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-    ];    use HasApiTokens, HasFactory, Notifiable;
+    ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -52,4 +49,26 @@ public function caretaker()
 {
     return $this->hasOne(Caretaker::class);
 }
+
+
+ // Role helper methods
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isLandlord()
+    {
+        return $this->role === 'landlord';
+    }
+
+    public function isCaretaker()
+    {
+        return $this->role === 'caretaker';
+    }
+
+    public function isTenant()
+    {
+        return $this->role === 'tenant';
+    }
 }

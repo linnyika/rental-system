@@ -1,16 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-class MaintenanceController extends Controller
-{
-    
 use App\Models\MaintenanceRequest;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
+class MaintenanceController extends Controller
+{
 public function store(Request $request)
 {
     $validated = $request->validate([

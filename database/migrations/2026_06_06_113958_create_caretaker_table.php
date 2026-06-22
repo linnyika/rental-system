@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('caretakers', function (Blueprint $table) {
         $table->id();
         $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-        $table->foreignId('landlord_id')->nullable()->constrained()->nullOnDelete();
+        $table->foreignId('landlord_id')->constrained()->cascadeOnDelete();
         $table->timestamps();
     });
 }

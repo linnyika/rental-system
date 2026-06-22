@@ -18,6 +18,11 @@ public function landlord()
     return $this->belongsTo(Landlord::class);
 }
 
+public function properties()
+{
+    return $this->hasMany(Property::class);
+}
+
 public function tasks()
 {
     return $this->hasMany(Task::class);
@@ -25,5 +30,5 @@ public function tasks()
 
 public function activityLogs()
 {
-    return $this->hasMany(ActivityLog::class);
+    return $this->hasMany('App\\Models\\ActivityLog');
 }}
