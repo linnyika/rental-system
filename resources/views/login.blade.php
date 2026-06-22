@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.8/dist/yeti/bootstrap.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #18babd 20%, #1f3648 70%);
+            background: linear-gradient(135deg, #188a77 0%, #1f3648 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -22,8 +22,7 @@
             background: white;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 60px #1f364833;
-            );
+            box-shadow: 0 20px 60px rgba(31, 54, 72, 0.3);
             max-width: 420px;
             width: 100%;
             animation: fadeInUp 0.6s ease;
@@ -63,8 +62,8 @@
         }
 
         .login-container .form-control:focus {
-            border-color: #10918c;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #188a77;
+            box-shadow: 0 0 0 0.2rem rgba(24, 138, 119, 0.25);
         }
 
         .login-container .form-control.is-invalid {
@@ -73,7 +72,7 @@
         }
 
         .login-container .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #188a77 0%, #1f3648 100%);
             border: none;
             border-radius: 10px;
             padding: 12px;
@@ -86,7 +85,7 @@
 
         .login-container .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(24, 138, 119, 0.4);
         }
 
         .login-container .btn-primary:active {
@@ -128,7 +127,7 @@
         }
 
         .register-link a {
-            color: #667eea;
+            color: #188a77;
             text-decoration: none;
             font-weight: 600;
         }
@@ -158,8 +157,8 @@
         }
 
         .form-check-input:checked {
-            background-color: #667eea;
-            border-color: #667eea;
+            background-color: #188a77;
+            border-color: #188a77;
         }
 
         .error-feedback {
@@ -228,7 +227,7 @@
 
     <div class="login-container">
         <h2>Rental System</h2>
-        <p class="subtitle">Login to Your Account</p>
+        <p class="subtitle">Login</p>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -280,26 +279,31 @@
                     @error('password')
                         {{ $message }}
                     @enderror
+                </div>
+            </div>
 
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember"
-                            {{ old('remember') ? 'checked' : '' }}>
-                        <label class="form-check-label" for="remember">Remember me</label>
-                    </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember"
+                    {{ old('remember') ? 'checked' : '' }}>
+                <label class="form-check-label" for="remember">Remember me</label>
+            </div>
 
-                    <button type="submit" class="btn btn-primary" id="loginButton">
-                        <span id="buttonText">Login</span>
-                        <span class="spinner" id="buttonSpinner"></span>
-                    </button>
+            <button type="submit" class="btn btn-primary" id="loginButton">
+                <span id="buttonText">Login</span>
+                <span class="spinner" id="buttonSpinner"></span>
+            </button>
         </form>
 
+        <div class="register-link">
+            <p>Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
+        </div>
+    </div>
 
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- Bootstrap JS Bundle with Popper -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-        <!-- Bootstrap Icons (for password toggle) -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Bootstrap Icons (for password toggle) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </body>
 
 </html>
