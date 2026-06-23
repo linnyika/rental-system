@@ -34,6 +34,10 @@ public function index(Request $request)
 
     $properties = $landlord->properties()->get();
 
+    if (! $request->is('api/*')) {
+        return view('landlord.properties', compact('properties'));
+    }
+
     return response()->json([
         'properties' => $properties,
     ]);

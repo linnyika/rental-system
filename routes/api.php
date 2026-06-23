@@ -13,13 +13,11 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'apiLogin']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    // Available to any logged-in user
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'apiLogout']);
 
-    // Landlord-only actions
     Route::middleware('role:landlord')->group(function () {
         Route::post('/properties', [PropertyController::class, 'store']);
         Route::get('/properties', [PropertyController::class, 'index']);
@@ -33,23 +31,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/payments/{payment}', [PaymentController::class, 'destroy']);
     });
 
-    // Tenant-only actions
     Route::middleware('role:tenant')->group(function () {
-        Route::post('/payments', [PaymentController::class, 'store']);
-        Route::middleware('role:tenant')->group(function () {
         Route::post('/payments', [PaymentController::class, 'store']);
         Route::get('/payments', [PaymentController::class, 'history']);
         Route::post('/maintenance', [MaintenanceController::class, 'store']);
     });
-    });
-    // Payment verification — caretaker (normal) or landlord (fallback)
+
     Route::middleware('role:caretaker,landlord')->group(function () {
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
-        Route::middleware('role:caretaker,landlord')->group(function () {
-        Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
         Route::post('/payments/cash', [PaymentController::class, 'storeCash']);
-
     });
-    });
-
 });

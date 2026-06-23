@@ -1,305 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.8/dist/yeti/bootstrap.min.css">
-    <style>
-        body {
-            background: #f4f8fb;
-        }
+@extends('admin.layout')
 
-        .admin-shell {
-            min-height: 100vh;
-        }
+@section('title', 'Admin Dashboard')
 
-        .sidebar {
-            background: #1f3648;
-            color: #fff;
-        }
-
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, .78);
-            border-radius: .35rem;
-            font-weight: 600;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, .12);
-            color: #fff;
-        }
-
-        .metric-card {
-            border: 0;
-            box-shadow: 0 .75rem 1.75rem rgba(31, 54, 72, .08);
-        }
-
-        .metric-icon {
-            width: 44px;
-            height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: .5rem;
-            font-weight: 700;
-        }
-
-        .table-card,
-        .panel-card {
-            border: 0;
-            box-shadow: 0 .75rem 1.75rem rgba(31, 54, 72, .07);
-        }
-
-        .status-dot {
-            width: .65rem;
-            height: .65rem;
-            display: inline-block;
-            border-radius: 50%;
-        }
-
-        .quick-action {
-            min-height: 88px;
-        }
-
-        @media (min-width: 992px) {
-            .sidebar {
-                width: 280px;
-            }
-        }
-    </style>
-</head>
-<body>
-<div class="admin-shell d-lg-flex">
-    <aside class="sidebar p-3 p-lg-4">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <div>
-                <div class="text-uppercase small text-white-50 fw-bold">Rental System</div>
-                <h1 class="h4 mb-0">Admin</h1>
-            </div>
-            <span class="badge text-bg-info">Live</span>
+@section('content')
+    <div class="d-flex flex-column flex-xl-row gap-3 justify-content-between align-items-xl-center mb-4">
+        <div>
+            <div class="text-uppercase fw-semibold text-primary small mb-1">System Overview</div>
+            <h1 class="h3 mb-2">Admin Dashboard</h1>
+            <p class="text-muted mb-0">Platform-wide statistics and reporting entry points for the full rental ecosystem.</p>
         </div>
-
-        <nav class="nav nav-pills flex-lg-column gap-2">
-            <a class="nav-link active" href="/admin/dashboard">Dashboard</a>
-            <a class="nav-link" href="#">Landlords</a>
-            <a class="nav-link" href="#">Properties</a>
-            <a class="nav-link" href="#">Tenants</a>
-            <a class="nav-link" href="#">Payments</a>
-            <a class="nav-link" href="#">Reports</a>
-        </nav>
-
-        <div class="mt-4 pt-4 border-top border-light border-opacity-25">
-            <div class="small text-white-50 mb-2">Signed in as</div>
-            <div class="fw-bold">System Admin</div>
-            <button class="btn btn-outline-light btn-sm mt-3 w-100" onclick="logout()">Logout</button>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" href="{{ route('admin.landlords.index') }}">Landlords</a>
+            <a class="btn btn-outline-primary" href="{{ route('admin.tenants.index') }}">Tenants</a>
+            <a class="btn btn-outline-primary" href="{{ route('admin.caretakers.index') }}">Caretakers</a>
+            <a class="btn btn-outline-primary" href="{{ route('admin.properties.index') }}">Properties</a>
         </div>
-    </aside>
+    </div>
 
-    <main class="flex-grow-1 p-3 p-md-4 p-xl-5">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-            <div>
-                <p class="text-uppercase text-primary fw-bold small mb-1">Administration</p>
-                <h2 class="display-6 fw-semibold mb-1">Dashboard</h2>
-                <p class="text-muted mb-0">Monitor properties, users, rent collection, and service requests.</p>
-            </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary">Export</button>
-                <button class="btn btn-primary">Add Landlord</button>
-            </div>
-        </div>
-
-        <div class="row g-3 g-xl-4 mb-4">
-            <div class="col-sm-6 col-xl-3">
-                <div class="card metric-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <p class="text-muted mb-1">Properties</p>
-                                <h3 class="mb-0">128</h3>
-                            </div>
-                            <span class="metric-icon bg-primary-subtle text-primary">PR</span>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Total Users</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_users']) }}</div>
                         </div>
-                        <div class="small text-success mt-3">+12 added this month</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-xl-3">
-                <div class="card metric-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <p class="text-muted mb-1">Occupied Units</p>
-                                <h3 class="mb-0">86%</h3>
-                            </div>
-                            <span class="metric-icon bg-success-subtle text-success">OU</span>
-                        </div>
-                        <div class="small text-muted mt-3">412 of 479 units occupied</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-xl-3">
-                <div class="card metric-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <p class="text-muted mb-1">Monthly Rent</p>
-                                <h3 class="mb-0">KES 8.4M</h3>
-                            </div>
-                            <span class="metric-icon bg-info-subtle text-info">RC</span>
-                        </div>
-                        <div class="small text-success mt-3">91% collection rate</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-xl-3">
-                <div class="card metric-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <p class="text-muted mb-1">Open Requests</p>
-                                <h3 class="mb-0">24</h3>
-                            </div>
-                            <span class="metric-icon bg-warning-subtle text-warning">MR</span>
-                        </div>
-                        <div class="small text-danger mt-3">6 overdue follow-ups</div>
+                        <span class="icon">U</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="row g-4">
-            <div class="col-xl-8">
-                <div class="card table-card">
-                    <div class="card-header bg-white d-flex align-items-center justify-content-between">
-                        <h3 class="h5 mb-0">Recent Landlords</h3>
-                        <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Total Landlords</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_landlords']) }}</div>
+                        </div>
+                        <span class="icon">L</span>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Total Tenants</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_tenants']) }}</div>
+                        </div>
+                        <span class="icon">T</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Total Caretakers</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_caretakers']) }}</div>
+                        </div>
+                        <span class="icon">C</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Total Properties</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_properties']) }}</div>
+                        </div>
+                        <span class="icon">P</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Total Units</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_units']) }}</div>
+                        </div>
+                        <span class="icon">U</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Occupied Units</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_occupied_units']) }}</div>
+                        </div>
+                        <span class="icon bg-success-subtle text-success">O</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Vacant Units</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_vacant_units']) }}</div>
+                        </div>
+                        <span class="icon bg-warning-subtle text-warning">V</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Active Leases</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_active_leases']) }}</div>
+                        </div>
+                        <span class="icon bg-info-subtle text-info">A</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Rent Collected</div>
+                            <div class="fs-3 fw-semibold">KES {{ number_format($stats['total_rent_collected']) }}</div>
+                        </div>
+                        <span class="icon bg-primary-subtle text-primary">R</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="card metric">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Pending Payments</div>
+                            <div class="fs-3 fw-semibold">{{ number_format($stats['total_pending_payments']) }}</div>
+                        </div>
+                        <span class="icon bg-danger-subtle text-danger">P</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="card panel">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="section-title fw-semibold">Recent Registrations</div>
+                        <div class="small text-muted">Latest user accounts across all roles.</div>
+                    </div>
+                    <span class="badge text-bg-light stat-badge">{{ $recentRegistrations->count() }} shown</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Contact</th>
+                            <th>Registered</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @forelse($recentRegistrations as $user)
                             <tr>
-                                <th>Name</th>
-                                <th>Properties</th>
-                                <th>Units</th>
-                                <th>Status</th>
-                                <th class="text-end">Balance</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>
-                                    <div class="fw-semibold">Grace Mwangi</div>
-                                    <div class="small text-muted">grace@example.com</div>
+                                <td class="fw-semibold">
+                                    {{ $user->name }}
+                                    @if($user->role === 'landlord' && $user->landlord)
+                                        <div class="small"><a href="{{ route('admin.landlords.show', $user->landlord) }}">View report</a></div>
+                                    @elseif($user->role === 'tenant' && $user->tenant)
+                                        <div class="small"><a href="{{ route('admin.tenants.show', $user->tenant) }}">View report</a></div>
+                                    @elseif($user->role === 'caretaker' && $user->caretaker)
+                                        <div class="small"><a href="{{ route('admin.caretakers.show', $user->caretaker) }}">View report</a></div>
+                                    @endif
                                 </td>
-                                <td>12</td>
-                                <td>64</td>
-                                <td><span class="badge text-bg-success">Active</span></td>
-                                <td class="text-end">KES 0</td>
-                            </tr>
-                            <tr>
+                                <td class="text-capitalize">{{ $user->role }}</td>
                                 <td>
-                                    <div class="fw-semibold">Daniel Otieno</div>
-                                    <div class="small text-muted">daniel@example.com</div>
+                                    <div>{{ $user->email ?? 'No email' }}</div>
+                                    <div class="small text-muted">{{ $user->phone ?? 'No phone' }}</div>
                                 </td>
-                                <td>8</td>
-                                <td>41</td>
-                                <td><span class="badge text-bg-info">Review</span></td>
-                                <td class="text-end">KES 42,000</td>
+                                <td>{{ $user->created_at?->format('M d, Y H:i') }}</td>
                             </tr>
+                        @empty
                             <tr>
-                                <td>
-                                    <div class="fw-semibold">Amina Hassan</div>
-                                    <div class="small text-muted">amina@example.com</div>
-                                </td>
-                                <td>5</td>
-                                <td>22</td>
-                                <td><span class="badge text-bg-success">Active</span></td>
-                                <td class="text-end">KES 0</td>
+                                <td colspan="4" class="text-center text-muted py-4">No registrations yet.</td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <div class="fw-semibold">Peter Kamau</div>
-                                    <div class="small text-muted">peter@example.com</div>
-                                </td>
-                                <td>3</td>
-                                <td>18</td>
-                                <td><span class="badge text-bg-warning">Pending</span></td>
-                                <td class="text-end">KES 15,500</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4">
-                <div class="card panel-card mb-4">
-                    <div class="card-header bg-white">
-                        <h3 class="h5 mb-0">Quick Actions</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <button class="btn btn-primary w-100 quick-action">Create User</button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 quick-action">Add Property</button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-secondary w-100 quick-action">Review Payments</button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-secondary w-100 quick-action">Assign Tasks</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card panel-card">
-                    <div class="card-header bg-white">
-                        <h3 class="h5 mb-0">System Activity</h3>
-                    </div>
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item d-flex gap-3">
-                            <span class="status-dot bg-success mt-2"></span>
-                            <div>
-                                <div class="fw-semibold">Rent payment confirmed</div>
-                                <div class="small text-muted">Tenant account updated 12 minutes ago</div>
-                            </div>
-                        </div>
-                        <div class="list-group-item d-flex gap-3">
-                            <span class="status-dot bg-info mt-2"></span>
-                            <div>
-                                <div class="fw-semibold">New property submitted</div>
-                                <div class="small text-muted">Awaiting admin review</div>
-                            </div>
-                        </div>
-                        <div class="list-group-item d-flex gap-3">
-                            <span class="status-dot bg-warning mt-2"></span>
-                            <div>
-                                <div class="fw-semibold">Maintenance SLA warning</div>
-                                <div class="small text-muted">6 requests need follow-up</div>
-                            </div>
-                        </div>
-                    </div>
+                        @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </main>
-</div>
 
-<script>
-    function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
+        <div class="col-xl-4">
+            <div class="card panel mb-4">
+                <div class="card-header bg-white">
+                    <div class="section-title fw-semibold">Oversight Areas</div>
+                    <div class="small text-muted">Drill into each entity list and report.</div>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ route('admin.landlords.index') }}">
+                        <span>Landlords</span><span class="badge text-bg-light">{{ number_format($stats['total_landlords']) }}</span>
+                    </a>
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ route('admin.tenants.index') }}">
+                        <span>Tenants</span><span class="badge text-bg-light">{{ number_format($stats['total_tenants']) }}</span>
+                    </a>
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ route('admin.caretakers.index') }}">
+                        <span>Caretakers</span><span class="badge text-bg-light">{{ number_format($stats['total_caretakers']) }}</span>
+                    </a>
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ route('admin.properties.index') }}">
+                        <span>Properties</span><span class="badge text-bg-light">{{ number_format($stats['total_properties']) }}</span>
+                    </a>
+                </div>
+            </div>
 
-        window.location.href = '/';
-    }
-</script>
-</body>
-</html>
+            <div class="card panel">
+                <div class="card-header bg-white">
+                    <div class="section-title fw-semibold">Recent Rent Activity</div>
+                    <div class="small text-muted">Latest payment records in the system.</div>
+                </div>
+                <div class="list-group list-group-flush">
+                    @forelse($recentPayments as $payment)
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between gap-3">
+                                <div>
+                                    <div class="fw-semibold">KES {{ number_format($payment->amount) }}</div>
+                                    <div class="small text-muted">
+                                        {{ $payment->tenant?->user?->name ?? 'Unknown tenant' }}
+                                        @if($payment->unit)
+                                            - {{ $payment->unit->property?->name }} / {{ $payment->unit->unit_number }}
+                                        @endif
+                                    </div>
+                                </div>
+                                <span class="badge {{ $payment->status === 'verified' ? 'text-bg-success' : 'text-bg-warning' }} align-self-start text-capitalize">{{ $payment->status }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="list-group-item text-muted">No payment records yet.</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

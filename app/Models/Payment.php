@@ -20,6 +20,15 @@ protected $fillable = [
     'verified_at',
 ];
 
+protected function casts(): array
+{
+    return [
+        'amount' => 'decimal:2',
+        'payment_date' => 'date',
+        'verified_at' => 'datetime',
+    ];
+}
+
 public function tenant()
 {
     return $this->belongsTo(Tenant::class);

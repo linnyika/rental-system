@@ -33,6 +33,12 @@
 
 <script>
 
+const sessionToken = @json(session('api_token'));
+
+if (sessionToken) {
+    localStorage.setItem('token', sessionToken);
+}
+
 const token = localStorage.getItem('token');
 
 async function loadProperties() {

@@ -25,10 +25,9 @@
            class="form-control mb-2"
            placeholder="Confirm Password">
 
-    <input id="unit_id"
-           type="number"
-           class="form-control mb-2"
-           placeholder="Unit ID">
+    <select id="unit_id" class="form-control mb-2">
+        <option value="">Select available unit</option>
+    </select>
 
     <input id="start_date"
            type="date"
@@ -45,7 +44,35 @@
 
 <script>
 
+const sessionToken = @json(session('api_token'));
+
+if (sessionToken) {
+    localStorage.setItem('token', sessionToken);
+}
+
 const token = localStorage.getItem('token');
+
+async function loadAvailableUnits() {
+    const response = await fetch('/api/available-units', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        return;
+    }
+
+    const data = await response.json();
+    const select = document.getElementById('unit_id');
+
+    data.units.forEach(unit => {
+        const option = document.createElement('option');
+        option.value = unit.id;
+        option.textContent = `${unit.property.name} - Unit ${unit.unit_number} (KES ${unit.rent_amount})`;
+        select.appendChild(option);
+    });
+}
 
 async function registerTenant(){
 
@@ -83,6 +110,8 @@ async function registerTenant(){
     document.getElementById('message')
         .innerText = data.message;
 }
+
+loadAvailableUnits();
 
 </script>
 

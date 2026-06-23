@@ -30,5 +30,6 @@ public function tasks()
 
 public function activityLogs()
 {
-    return $this->hasMany('App\\Models\\ActivityLog');
-}}
+    return $this->hasMany(ActivityLog::class);
+}
+}

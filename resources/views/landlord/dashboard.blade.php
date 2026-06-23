@@ -11,27 +11,28 @@
     <div class="row">
 
         <div class="col-md-3 mb-3">
-            <a href="/landlord/properties" class="btn btn-primary w-100">
+            <a href="{{ route('landlord.properties.index') }}" class="btn btn-primary w-100">
                 Manage Properties
             </a>
         </div>
 
         <div class="col-md-3 mb-3">
-            <a href="/landlord/caretakers" class="btn btn-success w-100">
+            <a href="{{ route('landlord.caretakers.create') }}" class="btn btn-success w-100">
                 Register Caretaker
             </a>
         </div>
 
         <div class="col-md-3 mb-3">
-            <a href="/landlord/tenants" class="btn btn-warning w-100">
+            <a href="{{ route('landlord.tenants.create') }}" class="btn btn-warning w-100">
                 Register Tenant
             </a>
         </div>
 
         <div class="col-md-3 mb-3">
-            <button class="btn btn-danger w-100" onclick="logout()">
-                Logout
-            </button>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="btn btn-danger w-100" type="submit">Logout</button>
+            </form>
         </div>
 
     </div>
@@ -49,11 +50,11 @@
     </div>
 
     <script>
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
+        const token = @json(session('api_token'));
 
-            window.location.href = '/';
+        if (token) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('role', 'landlord');
         }
     </script>
 

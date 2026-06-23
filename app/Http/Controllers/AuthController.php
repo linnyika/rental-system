@@ -120,6 +120,110 @@ class AuthController extends Controller
             ->with('success', 'Registration successful! Welcome to the Rental System.');
     }
 
+    public function registerCaretaker(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'email' => 'nullable|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $landlord = $request->user()->landlord;
+
+        if (! $landlord) {
+            return response()->json(['message' => 'Only landlords can register caretakers.'], 403);
+        }
+
+        $user = User::create([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'caretaker',
+        ]);
+
+        $caretaker = Caretaker::create([
+            'user_id' => $user->id,
+            'landlord_id' => $landlord->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Caretaker registered successfully',
+            'caretaker' => $caretaker->load('user'),
+        ], 201);
+    }
+
+    public function registerTenant(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'email' => 'nullable|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'unit_id' => 'required|exists:units,id',
+            'start_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $landlord = $request->user()->landlord;
+
+        if (! $landlord) {
+            return response()->json(['message' => 'Only landlords can register tenants.'], 403);
+        }
+
+        $unit = Unit::where('id', $request->unit_id)
+            ->whereHas('property', function ($query) use ($landlord) {
+                $query->where('landlord_id', $landlord->id);
+            })
+            ->first();
+
+        if (! $unit) {
+            return response()->json([
+                'message' => 'Unit not found or does not belong to you.',
+            ], 404);
+        }
+
+        if ($unit->is_occupied) {
+            return response()->json([
+                'message' => 'This unit is already occupied.',
+            ], 422);
+        }
+
+        $user = User::create([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'tenant',
+        ]);
+
+        $tenant = Tenant::create([
+            'user_id' => $user->id,
+        ]);
+
+        TenantOccupancy::create([
+            'tenant_id' => $tenant->id,
+            'unit_id' => $unit->id,
+            'start_date' => $request->start_date,
+        ]);
+
+        $unit->update(['is_occupied' => true]);
+
+        return response()->json([
+            'message' => 'Tenant registered successfully',
+            'tenant' => $tenant->load('user'),
+            'unit' => $unit,
+        ], 201);
+    }
+
     /**
      * Handle logout
      */

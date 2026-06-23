@@ -38,6 +38,27 @@ public function index(Request $request, $propertyId)
 
     $units = $property->units()->get();
 
+    if (! $request->is('api/*')) {
+        return view('landlord.units', compact('property', 'units'));
+    }
+
+    return response()->json([
+        'units' => $units,
+    ]);
+}
+
+public function availableUnits(Request $request)
+{
+    $landlord = $request->user()->landlord;
+
+    $units = Unit::with('property')
+        ->where('is_occupied', false)
+        ->whereHas('property', function ($query) use ($landlord) {
+            $query->where('landlord_id', $landlord->id);
+        })
+        ->orderBy('unit_number')
+        ->get();
+
     return response()->json([
         'units' => $units,
     ]);

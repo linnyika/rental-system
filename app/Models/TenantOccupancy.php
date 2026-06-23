@@ -8,6 +8,14 @@ class TenantOccupancy extends Model
 {
     protected $fillable = ['tenant_id', 'unit_id', 'start_date', 'end_date'];
 
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'end_date' => 'date',
+        ];
+    }
+
 public function tenant()
 {
     return $this->belongsTo(Tenant::class);
