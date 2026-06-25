@@ -32,4 +32,8 @@ public function activityLogs()
 {
     return $this->hasMany(ActivityLog::class);
 }
+public function maintenanceRequests()
+{
+    return $this->hasMany(MaintenanceRequest::class);
+}
 }

@@ -40,4 +40,109 @@ public function store(Request $request)
 
     return response()->json(['message' => 'Maintenance request submitted', 'request' => $req], 201);
 }
+public function index(Request $request)
+{
+    $landlord = $request->user()->landlord;
+        $landlord = $request->user()->landlord;
+
+    
+ $requests = MaintenanceRequest::whereHas(
+        'unit.property',
+        function ($query) use ($landlord) {
+            $query->where('landlord_id', $landlord->id);
+        }
+    )
+    ->with(['tenant', 'unit'])
+    ->latest()
+    ->get();
+
+    return response()->json([
+        'requests' => $requests 
+    ]);
+    
 }
+public function caretakerRequests(Request $request)
+{
+     $caretaker = $request->user()->caretaker;
+
+    
+    $caretaker = $request->user()->caretaker;
+
+    if (!$caretaker) {
+        return response()->json([
+            'message' => 'Caretaker profile not found'
+        ], 404);
+    }
+
+    $requests = MaintenanceRequest::whereHas(
+        'unit.property',
+        function ($query) use ($caretaker) {
+            $query->where('caretaker_id', $caretaker->id);
+        }
+    )
+    ->with([
+        'tenant',
+        'unit',
+        'unit.property'
+    ])
+    ->latest()
+    ->get();
+
+    return response()->json([
+        'requests' => $requests
+    ]);
+}
+public function updateStatus(Request $request, MaintenanceRequest $maintenanceRequest)
+{
+    $request->validate([
+        'status' => 'required|in:pending,approved,rejected,in progress,completed'
+    ]);
+
+    $landlord = $request->user()->landlord;
+
+    if (
+        $maintenanceRequest->unit->property->landlord_id != $landlord->id
+    ) {
+        return response()->json([
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    $maintenanceRequest->update([
+        'status' => $request->status
+    ]);
+
+    return response()->json([
+        'message' => 'Status updated successfully',
+        'request' => $maintenanceRequest
+    ]);
+}
+public function assignCaretaker(Request $request, MaintenanceRequest $maintenanceRequest)
+{
+    $request->validate([
+        'caretaker_id' => 'required|exists:caretakers,id'
+    ]);
+
+    $landlord = $request->user()->landlord;
+
+    if (
+        $maintenanceRequest->unit->property->landlord_id != $landlord->id
+    ) {
+        return response()->json([
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    $maintenanceRequest->update([
+        'caretaker_id' => $request->caretaker_id,
+        'status' => 'approved'
+    ]);
+
+    return response()->json([
+        'message' => 'Caretaker assigned successfully',
+        'request' => $maintenanceRequest
+    ]);
+}
+
+}
+

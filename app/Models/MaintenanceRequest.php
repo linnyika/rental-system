@@ -10,4 +10,8 @@ protected $fillable = ['tenant_id', 'unit_id', 'description', 'status', 'is_majo
 public function tenant(){ return $this->belongsTo(Tenant::class); }
 public function unit(){ return $this->belongsTo(Unit::class); }
 public function task(){ return $this->hasOne(Task::class); }
+public function caretaker()
+{
+    return $this->belongsTo(Caretaker::class);
+}
 }
