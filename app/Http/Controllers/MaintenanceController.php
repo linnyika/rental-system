@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\MaintenanceRequest;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class MaintenanceController extends Controller
 {
@@ -61,41 +62,34 @@ public function index(Request $request)
     ]);
     
 }
-public function caretakerRequests(Request $request)
+public function caretakerTasks(Request $request)
 {
-     $caretaker = $request->user()->caretaker;
-
-    
     $caretaker = $request->user()->caretaker;
 
-    if (!$caretaker) {
-        return response()->json([
-            'message' => 'Caretaker profile not found'
-        ], 404);
-    }
-
-    $requests = MaintenanceRequest::whereHas(
-        'unit.property',
-        function ($query) use ($caretaker) {
-            $query->where('caretaker_id', $caretaker->id);
-        }
+    $tasks = Task::where(
+        'caretaker_id',
+        $caretaker->id
     )
     ->with([
-        'tenant',
-        'unit',
-        'unit.property'
+        'request',
+        'request.tenant',
+        'request.unit',
+        'request.unit.property'
     ])
     ->latest()
     ->get();
 
     return response()->json([
-        'requests' => $requests
+        'tasks' => $tasks
     ]);
 }
-public function updateStatus(Request $request, MaintenanceRequest $maintenanceRequest)
+public function updateStatus(
+    Request $request,
+    MaintenanceRequest $maintenanceRequest
+)
 {
     $request->validate([
-        'status' => 'required|in:pending,approved,rejected,in progress,completed'
+        'status' => 'required|in:approved,rejected'
     ]);
 
     $landlord = $request->user()->landlord;
@@ -106,43 +100,137 @@ public function updateStatus(Request $request, MaintenanceRequest $maintenanceRe
         return response()->json([
             'message' => 'Unauthorized'
         ], 403);
+    }
+
+    // Prevent updating already processed requests
+    if (
+        in_array(
+            $maintenanceRequest->status,
+            ['approved', 'rejected', 'completed']
+        )
+    ) {
+        return response()->json([
+            'message' => 'Request has already been processed'
+        ], 422);
     }
 
     $maintenanceRequest->update([
         'status' => $request->status
     ]);
 
-    return response()->json([
-        'message' => 'Status updated successfully',
-        'request' => $maintenanceRequest
-    ]);
-}
-public function assignCaretaker(Request $request, MaintenanceRequest $maintenanceRequest)
-{
-    $request->validate([
-        'caretaker_id' => 'required|exists:caretakers,id'
-    ]);
+    if ($request->status === 'approved') {
 
-    $landlord = $request->user()->landlord;
+        $caretakerId = $maintenanceRequest
+            ->unit
+            ->property
+            ->caretaker_id;
 
-    if (
-        $maintenanceRequest->unit->property->landlord_id != $landlord->id
-    ) {
-        return response()->json([
-            'message' => 'Unauthorized'
-        ], 403);
+        if (!$caretakerId) {
+            return response()->json([
+                'message' => 'No caretaker assigned to this property'
+            ], 422);
+        }
+
+        // Prevent duplicate task creation
+        if (!$maintenanceRequest->task) {
+
+            Task::create([
+                'maintenance_request_id' => $maintenanceRequest->id,
+                'caretaker_id' => $caretakerId,
+                'status' => 'assigned'
+            ]);
+        }
     }
 
-    $maintenanceRequest->update([
-        'caretaker_id' => $request->caretaker_id,
-        'status' => 'approved'
+    return response()->json([
+        'message' => 'Request updated successfully',
+        'request' => $maintenanceRequest->fresh()
+    ]);
+}
+public function startWork(Task $task)
+{
+    $task->update([
+        'status' => 'in_progress'
+    ]);
+
+    ActivityLog::create([
+        'caretaker_id' => $task->caretaker_id,
+        'description' => 'Started maintenance work: ' .
+            $task->request->description,
+        'activity_date' => now()->toDateString(),
     ]);
 
     return response()->json([
-        'message' => 'Caretaker assigned successfully',
-        'request' => $maintenanceRequest
+        'message' => 'Task started',
+        'task' => $task
+    ]);
+}
+public function markWorkDone(Task $task)
+{
+    $task->update([
+        'status' => 'done',
+        'completed_at' => now()
+    ]);
+
+    ActivityLog::create([
+        'caretaker_id' => $task->caretaker_id,
+        'description' => 'Completed maintenance work: ' .
+            $task->request->description,
+        'activity_date' => now()->toDateString(),
+    ]);
+
+    return response()->json([
+        'message' => 'Task completed',
+        'task' => $task
+    ]);
+}
+public function confirmCompletion(Task $task)
+{
+    $task->update([
+        'tenant_confirmed' => true
+    ]);
+
+    $task->request->update([
+        'status' => 'completed'
+    ]);
+
+    return response()->json([
+        'message' => 'Work confirmed'
     ]);
 }
 
+public function activityLogs(Request $request)
+{
+    $caretaker = $request->user()->caretaker;
+
+    $logs = ActivityLog::where(
+        'caretaker_id',
+        $caretaker->id
+    )
+    ->latest()
+    ->get();
+
+    return response()->json([
+        'logs' => $logs
+    ]);
+}
+public function landlordActivityLogs(Request $request)
+{
+    $landlord = $request->user()->landlord;
+
+    $logs = ActivityLog::whereHas(
+        'caretaker.properties',
+        function ($query) use ($landlord) {
+            $query->where('landlord_id', $landlord->id);
+        }
+    )
+    ->with('caretaker')
+    ->latest()
+    ->get();
+
+    return response()->json([
+        'logs' => $logs
+    ]);
+}
 }
 

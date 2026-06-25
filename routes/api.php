@@ -63,13 +63,22 @@ Route::middleware('auth:sanctum')->group(function () {
             [MaintenanceController::class, 'updateStatus']
         );
 
-        Route::patch(
-            '/maintenance-requests/{maintenanceRequest}/assign-caretaker',
-            [MaintenanceController::class, 'assignCaretaker']
-        );
+       Route::get(
+    '/maintenance-requests',
+    [MaintenanceController::class, 'index']
+);
+
+Route::patch(
+    '/maintenance-requests/{maintenanceRequest}/status',
+    [MaintenanceController::class, 'updateStatus']
+);
 
         // Payments
         Route::delete('/payments/{payment}', [PaymentController::class, 'destroy']);
+        Route::get(
+    '/activity-logs',
+    [MaintenanceController::class, 'landlordActivityLogs']
+);   
     });
 
 
@@ -92,6 +101,10 @@ Route::middleware('auth:sanctum')->group(function () {
             '/maintenance-requests',
             [MaintenanceController::class, 'store']
         );
+        Route::put(
+    '/tasks/{task}/confirm',
+    [MaintenanceController::class, 'confirmCompletion']
+);
     });
 
 
@@ -103,10 +116,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:caretaker')->group(function () {
 
-        Route::get(
+       /* Route::get(
             '/caretaker/maintenance-requests',
-            [MaintenanceController::class, 'caretakerRequests']
-        );
+            [MaintenanceController::class, 'caretakerRequests']);*/
+        
+        Route::get(
+    '/caretaker/tasks',
+    [MaintenanceController::class, 'caretakerTasks']
+);
+
+Route::put(
+    '/tasks/{task}/start',
+    [MaintenanceController::class, 'startWork']
+);
+
+Route::put(
+    '/tasks/{task}/complete',
+    [MaintenanceController::class, 'markWorkDone']
+);
+ Route::get(
+        '/caretaker/activity-logs',
+        [MaintenanceController::class, 'activityLogs']
+    );
     });
 
 
