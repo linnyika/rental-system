@@ -50,6 +50,11 @@ public function caretaker()
     return $this->hasOne(Caretaker::class);
 }
 
+public function notifications()
+{
+    return $this->hasMany(Notification::class);
+}
+
 
  // Role helper methods
     public function isAdmin()

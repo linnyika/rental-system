@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Payment;
+use App\Models\Notification;
 class PaymentController extends Controller
 {
    public function store(Request $request)
@@ -40,6 +41,16 @@ class PaymentController extends Controller
         'status' => 'pending',
     ]);
 
+    $landlordUser = $unit->property->landlord?->user;
+    if ($landlordUser) {
+        $this->createNotification(
+            $landlordUser->id,
+            'Payment Submitted',
+            'A tenant has submitted a payment awaiting verification.',
+            'payment'
+        );
+    }
+
     return response()->json([
         'message' => 'Payment submitted and pending verification',
         'payment' => $payment,
@@ -74,6 +85,16 @@ public function verify(Request $request, $paymentId)
     $payment->status = 'verified';
     $payment->verified_at = now();
     $payment->save();
+
+    $tenantUser = $payment->tenant?->user;
+    if ($tenantUser) {
+        $this->createNotification(
+            $tenantUser->id,
+            'Payment Verified',
+            'Your payment has been verified successfully.',
+            'payment'
+        );
+    }
 
     return response()->json([
         'message' => 'Payment verified successfully',
@@ -138,6 +159,16 @@ public function storeCash(Request $request)
         'verified_at' => now(),
     ], $verifierColumn));
 
+    $tenantUser = $tenant->user;
+    if ($tenantUser) {
+        $this->createNotification(
+            $tenantUser->id,
+            'Payment Verified',
+            'Your payment has been verified successfully.',
+            'payment'
+        );
+    }
+
     return response()->json([
         'message' => 'Cash payment recorded',
         'payment' => $payment,
@@ -159,5 +190,16 @@ public function destroy(Request $request, $paymentId)
 
     $payment->delete();
     return response()->json(['message' => 'Payment deleted.']);
+}
+
+private function createNotification(int $userId, string $title, string $message, string $type): void
+{
+    Notification::create([
+        'user_id' => $userId,
+        'title' => $title,
+        'message' => $message,
+        'type' => $type,
+        'is_read' => false,
+    ]);
 }
 }

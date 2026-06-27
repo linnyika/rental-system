@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\MaintenanceRequest;
 use App\Models\Task;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\ActivityLog;
 
@@ -38,6 +39,16 @@ public function store(Request $request)
         'is_major' => $validated['is_major'] ?? false,
         'status' => 'pending',
     ]);
+
+    $landlordUser = $unit->property->landlord?->user;
+    if ($landlordUser) {
+        $this->createNotification(
+            $landlordUser->id,
+            'New Maintenance Request',
+            'A new maintenance request has been submitted.',
+            'maintenance'
+        );
+    }
 
     return response()->json(['message' => 'Maintenance request submitted', 'request' => $req], 201);
 }
@@ -139,6 +150,26 @@ public function updateStatus(
                 'caretaker_id' => $caretakerId,
                 'status' => 'assigned'
             ]);
+
+            $caretakerUser = $maintenanceRequest->unit->property->caretaker?->user;
+            if ($caretakerUser) {
+                $this->createNotification(
+                    $caretakerUser->id,
+                    'New Task Assigned',
+                    'A maintenance task has been assigned to you.',
+                    'maintenance'
+                );
+            }
+        }
+    } elseif ($request->status === 'rejected') {
+        $tenantUser = $maintenanceRequest->tenant?->user;
+        if ($tenantUser) {
+            $this->createNotification(
+                $tenantUser->id,
+                'Maintenance Request Rejected',
+                'Your maintenance request has been rejected.',
+                'maintenance'
+            );
         }
     }
 
@@ -160,6 +191,16 @@ public function startWork(Task $task)
         'activity_date' => now()->toDateString(),
     ]);
 
+    $tenantUser = $task->request?->tenant?->user;
+    if ($tenantUser) {
+        $this->createNotification(
+            $tenantUser->id,
+            'Maintenance Started',
+            'Your maintenance request is now being worked on.',
+            'maintenance'
+        );
+    }
+
     return response()->json([
         'message' => 'Task started',
         'task' => $task
@@ -179,6 +220,16 @@ public function markWorkDone(Task $task)
         'activity_date' => now()->toDateString(),
     ]);
 
+    $tenantUser = $task->request?->tenant?->user;
+    if ($tenantUser) {
+        $this->createNotification(
+            $tenantUser->id,
+            'Maintenance Completed',
+            'Please confirm whether the maintenance work has been completed.',
+            'maintenance'
+        );
+    }
+
     return response()->json([
         'message' => 'Task completed',
         'task' => $task
@@ -193,6 +244,16 @@ public function confirmCompletion(Task $task)
     $task->request->update([
         'status' => 'completed'
     ]);
+
+    $landlordUser = $task->request?->unit?->property?->landlord?->user;
+    if ($landlordUser) {
+        $this->createNotification(
+            $landlordUser->id,
+            'Maintenance Confirmed',
+            'The tenant has confirmed the maintenance work.',
+            'maintenance'
+        );
+    }
 
     return response()->json([
         'message' => 'Work confirmed'
@@ -232,5 +293,15 @@ public function landlordActivityLogs(Request $request)
         'logs' => $logs
     ]);
 }
-}
 
+private function createNotification(int $userId, string $title, string $message, string $type): void
+{
+    Notification::create([
+        'user_id' => $userId,
+        'title' => $title,
+        'message' => $message,
+        'type' => $type,
+        'is_read' => false,
+    ]);
+}
+}
