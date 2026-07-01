@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rental Management</string>
+    <string name="module_1_ready">Android project scaffold is ready for the next module.</string>
+    <string name="splash_subtitle">Native client for the Rental Management System</string>
+    <string name="login_subtitle">Login</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_up_prompt">Don\'t have an account? Sign Up</string>
+    <string name="create_landlord_account">Create Landlord Account</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone_optional">Phone (optional)</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="already_have_account">Already have an account? Login</string>
+    <string name="logout">Logout</string>
+    <string name="module_2_placeholder">Placeholder screen for Module 3.</string>
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="landlord_dashboard">Landlord Dashboard</string>
+    <string name="caretaker_dashboard">Caretaker Dashboard</string>
+    <string name="tenant_dashboard">Tenant Dashboard</string>
+    <string name="loading">Loading</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+</resources>

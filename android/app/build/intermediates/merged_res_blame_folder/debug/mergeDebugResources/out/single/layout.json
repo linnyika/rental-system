@@ -1,0 +1,106 @@
+[
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_add_property.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_add_property.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_register_tenant.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_register_tenant.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_task.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_task.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_landlord_signup.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_landlord_signup.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_activity_log.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_activity_log.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_caretaker_tasks.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_caretaker_tasks.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_dashboard_metric.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_dashboard_metric.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_dashboard.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_dashboard.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_dashboard_list.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_dashboard_list.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_register_caretaker.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_register_caretaker.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_tenant_maintenance.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_tenant_maintenance.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_admin_landlords.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_admin_landlords.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_caretaker_activity_logs.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_caretaker_activity_logs.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_notification.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_notification.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_units.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_units.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_property_details.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_property_details.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_role_dashboard.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_role_dashboard.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_properties.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_properties.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_login.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_dashboard_action.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_dashboard_action.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_notifications.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_notifications.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/item_maintenance.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/item_maintenance.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_main.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/activity_landlord_maintenance.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/activity_landlord_maintenance.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/dialog_loading.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/dialog_loading.xml"
+    },
+    {
+        "merged": "com.rentalmanagement.app-mergeDebugResources-33:/layout/dialog_edit_landlord.xml",
+        "source": "com.rentalmanagement.app-main-36:/layout/dialog_edit_landlord.xml"
+    }
+]

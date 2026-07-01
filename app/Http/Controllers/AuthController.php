@@ -12,7 +12,8 @@ use App\Models\Tenant;
 use App\Models\Caretaker;
 use App\Models\Unit;
 use App\Models\TenantOccupancy;
-use Laravel\Sanctum\HasApiTokens;
+use App\Models\Property;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -92,20 +93,11 @@ class AuthController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Create the user with landlord role
-        $user = User::create([
+        $user = $this->createLandlordUser([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'role' => 'landlord',
-        ]);
-
-        // Create the landlord profile
-        Landlord::create([
-            'user_id' => $user->id,
-            'company_name' => $request->company_name ?? null,
-            'phone' => $request->phone ?? null,
+            'password' => $request->password,
         ]);
 
         // Log the user in
@@ -127,6 +119,7 @@ class AuthController extends Controller
             'phone' => 'required|string|max:20|unique:users,phone',
             'email' => 'nullable|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
+            'property_id' => 'required|integer|exists:properties,id',
         ]);
 
         if ($validator->fails()) {
@@ -137,6 +130,22 @@ class AuthController extends Controller
 
         if (! $landlord) {
             return response()->json(['message' => 'Only landlords can register caretakers.'], 403);
+        }
+
+        $property = Property::where('id', $request->property_id)
+            ->where('landlord_id', $landlord->id)
+            ->first();
+
+        if (! $property) {
+            return response()->json([
+                'message' => 'Selected property was not found or does not belong to you.',
+            ], 404);
+        }
+
+        if ($property->caretaker_id) {
+            return response()->json([
+                'message' => 'Selected property already has a caretaker assigned.',
+            ], 422);
         }
 
         $user = User::create([
@@ -152,10 +161,110 @@ class AuthController extends Controller
             'landlord_id' => $landlord->id,
         ]);
 
+        $property->update([
+            'caretaker_id' => $caretaker->id,
+        ]);
+
         return response()->json([
             'message' => 'Caretaker registered successfully',
             'caretaker' => $caretaker->load('user'),
+            'property' => $property,
         ], 201);
+    }
+
+    public function adminLandlords(Request $request)
+    {
+        $landlords = Landlord::with('user')
+            ->withCount('properties')
+            ->latest()
+            ->get()
+            ->map(function (Landlord $landlord) {
+                return [
+                    'id' => $landlord->id,
+                    'user_id' => $landlord->user_id,
+                    'name' => $landlord->user?->name,
+                    'email' => $landlord->user?->email,
+                    'phone' => $landlord->user?->phone,
+                    'properties_count' => $landlord->properties_count,
+                    'created_at' => optional($landlord->created_at)->toDateTimeString(),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'landlords' => $landlords,
+        ]);
+    }
+
+    public function adminUpdateLandlord(Request $request, Landlord $landlord)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $landlord->user_id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $landlord->user;
+        if (! $user) {
+            return response()->json(['message' => 'Landlord user account not found.'], 404);
+        }
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+
+        return response()->json([
+            'message' => 'Landlord updated successfully',
+            'landlord' => [
+                'id' => $landlord->id,
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ],
+        ]);
+    }
+
+    public function adminDeleteLandlord(Request $request, Landlord $landlord)
+    {
+        DB::transaction(function () use ($landlord) {
+            $propertyIds = Property::where('landlord_id', $landlord->id)->pluck('id');
+            $unitIds = Unit::whereIn('property_id', $propertyIds)->pluck('id');
+
+            $tenantIds = TenantOccupancy::whereIn('unit_id', $unitIds)
+                ->pluck('tenant_id')
+                ->unique()
+                ->values();
+
+            $tenantUserIds = Tenant::whereIn('id', $tenantIds)->pluck('user_id');
+            $caretakerUserIds = Caretaker::where('landlord_id', $landlord->id)->pluck('user_id');
+            $landlordUserId = $landlord->user_id;
+
+            $userIdsToDelete = $tenantUserIds
+                ->merge($caretakerUserIds)
+                ->push($landlordUserId)
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($userIdsToDelete->isNotEmpty()) {
+                User::whereIn('id', $userIdsToDelete)->get()->each(function (User $user) {
+                    $user->delete();
+                });
+            } else {
+                $landlord->delete();
+            }
+        });
+
+        return response()->json([
+            'message' => 'Landlord and related records deleted successfully',
+        ]);
     }
 
     public function registerTenant(Request $request)
@@ -281,18 +390,14 @@ class AuthController extends Controller
      */
     public function apiLogin(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        $user = User::where('email', $validated['email'])->first();
 
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'message' => 'The provided credentials are incorrect.',
             ], 401);
@@ -308,6 +413,37 @@ class AuthController extends Controller
         ]);
     }
 
+    public function apiLandlordSignup(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $this->createLandlordUser([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => $request->password,
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+            'role' => $user->role,
+            'message' => 'Landlord account created successfully',
+        ], 201);
+    }
+
     /**
      * API Logout
      */
@@ -318,6 +454,23 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out successfully'
         ]);
+    }
+
+    private function createLandlordUser(array $data): User
+    {
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
+            'password' => Hash::make($data['password']),
+            'role' => 'landlord',
+        ]);
+
+        Landlord::create([
+            'user_id' => $user->id,
+        ]);
+
+        return $user->fresh(['landlord']);
     }
 }
 
