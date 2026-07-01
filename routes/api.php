@@ -7,7 +7,7 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MaintenanceController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,15 +32,9 @@ Route::get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'apiLogout']);
 
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::put('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
-
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/admin/landlords', [AuthController::class, 'adminLandlords']);
-        Route::patch('/admin/landlords/{landlord}', [AuthController::class, 'adminUpdateLandlord']);
-        Route::delete('/admin/landlords/{landlord}', [AuthController::class, 'adminDeleteLandlord']);
-    });
+    Route::get('/notifications', [NotificationsController::class, 'index']);
+    Route::put('/notifications/{notification}/read', [NotificationsController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [NotificationsController::class, 'markAllAsRead']);
 
     /*
     |--------------------------------------------------------------------------
@@ -62,8 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/maintenance-requests', [MaintenanceController::class, 'index']);
         Route::patch('/maintenance-requests/{maintenanceRequest}/status', [MaintenanceController::class, 'updateStatus']);
 
+        // Payments
         Route::delete('/payments/{payment}', [PaymentController::class, 'destroy']);
-        Route::get('/activity-logs', [MaintenanceController::class, 'landlordActivityLogs']);
+        Route::get(
+    '/activity-logs',
+    [MaintenanceController::class, 'landlordActivityLogs']
+);
     });
 
     /*
@@ -77,9 +75,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/maintenance', [MaintenanceController::class, 'store']);
         Route::post('/maintenance-requests', [MaintenanceController::class, 'store']);
-        Route::get('/tenant/maintenance-requests', [MaintenanceController::class, 'tenantRequests']);
-
-        Route::get('/tenant/tasks/completed', [MaintenanceController::class, 'tenantCompletedTasks']);
         Route::put('/tasks/{task}/confirm', [MaintenanceController::class, 'confirmCompletion']);
     });
 
@@ -89,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:caretaker')->group(function () {
+
         Route::get('/caretaker/tasks', [MaintenanceController::class, 'caretakerTasks']);
         Route::put('/tasks/{task}/start', [MaintenanceController::class, 'startWork']);
         Route::put('/tasks/{task}/complete', [MaintenanceController::class, 'markWorkDone']);
@@ -101,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:caretaker,landlord')->group(function () {
+
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
         Route::post('/payments/cash', [PaymentController::class, 'storeCash']);
     });
