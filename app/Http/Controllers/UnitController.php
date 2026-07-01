@@ -2,65 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Property;
 use App\Models\Unit;
+use App\Models\Property;
+use Illuminate\Http\Request;
+
 class UnitController extends Controller
 {
-    public function store(Request $request, $propertyId)
-{
-    $validated = $request->validate([
-        'unit_number' => 'required|string|max:255',
-        'rent_amount' => 'required|numeric|min:0',
-    ]);
-
-    $landlord = $request->user()->landlord;
-
-    // Ownership check: the property must belong to THIS landlord
-    $property = $landlord->properties()->findOrFail($propertyId);
-
-    $unit = $property->units()->create([
-        'unit_number' => $validated['unit_number'],
-        'rent_amount' => $validated['rent_amount'],
-    ]);
-
-    return response()->json([
-        'message' => 'Unit created successfully',
-        'unit' => $unit,
-    ], 201);
-}
-
-public function index(Request $request, $propertyId)
-{
-    $landlord = $request->user()->landlord;
-
-    $property = $landlord->properties()->findOrFail($propertyId);
-
-    $units = $property->units()->get();
-
-    if (! $request->is('api/*')) {
-        return view('landlord.units', compact('property', 'units'));
+    // -------------------- LIST (under property) --------------------
+    public function index(Request $request, Property $property)
+    {
+        $this->authorizeProperty($request->user(), $property);
+        $units = $property->units()->get();
+        return $this->successResponse($units);
     }
 
-    return response()->json([
-        'units' => $units,
-    ]);
-}
+    // -------------------- STORE --------------------
+    public function store(Request $request, Property $property)
+    {
+        $this->authorizeProperty($request->user(), $property);
+        $validation = $this->validateRequest($request, [
+            'unit_number' => 'required|string|max:50',
+            'rent_amount' => 'required|numeric|min:0',
+            'bedrooms' => 'nullable|integer|min:0',
+            'bathrooms' => 'nullable|integer|min:0',
+            'size_sqft' => 'nullable|integer|min:0',
+            'status' => 'nullable|in:available,occupied,maintenance',
+        ]);
+        if ($validation) return $validation;
 
-public function availableUnits(Request $request)
-{
-    $landlord = $request->user()->landlord;
+        $unit = $property->units()->create($request->all());
+        return $this->successResponse($unit, 'Unit created', 201);
+    }
 
-    $units = Unit::with('property')
-        ->where('is_occupied', false)
-        ->whereHas('property', function ($query) use ($landlord) {
-            $query->where('landlord_id', $landlord->id);
-        })
-        ->orderBy('unit_number')
-        ->get();
+    // -------------------- SHOW --------------------
+    public function show(Request $request, Property $property, Unit $unit)
+    {
+        $this->authorizeProperty($request->user(), $property);
+        if ($unit->property_id !== $property->id) {
+            abort(404);
+        }
+        return $this->successResponse($unit);
+    }
 
-    return response()->json([
-        'units' => $units,
-    ]);
-}
+    // -------------------- UPDATE --------------------
+    public function update(Request $request, Property $property, Unit $unit)
+    {
+        $this->authorizeProperty($request->user(), $property);
+        if ($unit->property_id !== $property->id) {
+            abort(404);
+        }
+
+        $validation = $this->validateRequest($request, [
+            'unit_number' => 'sometimes|string|max:50',
+            'rent_amount' => 'sometimes|numeric|min:0',
+            'bedrooms' => 'nullable|integer|min:0',
+            'bathrooms' => 'nullable|integer|min:0',
+            'size_sqft' => 'nullable|integer|min:0',
+            'status' => 'nullable|in:available,occupied,maintenance',
+            'is_occupied' => 'sometimes|boolean',
+        ]);
+        if ($validation) return $validation;
+
+        $unit->update($request->all());
+        return $this->successResponse($unit, 'Unit updated');
+    }
+
+    // -------------------- DELETE --------------------
+    public function destroy(Request $request, Property $property, Unit $unit)
+    {
+        $this->authorizeProperty($request->user(), $property);
+        if ($unit->property_id !== $property->id) {
+            abort(404);
+        }
+        // Prevent deletion if occupied
+        if ($unit->is_occupied) {
+            return $this->errorResponse('Cannot delete an occupied unit', 422);
+        }
+        $unit->delete();
+        return $this->successResponse(null, 'Unit deleted');
+    }
+
+    // -------------------- AUTHORIZATION HELPER --------------------
+    private function authorizeProperty($user, $property)
+    {
+        if ($user->role === 'admin') return;
+        $landlord = $user->landlord;
+        if (!$landlord || $property->landlord_id !== $landlord->id) {
+            abort(403, 'Unauthorized');
+        }
+    }
 }

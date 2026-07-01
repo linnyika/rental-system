@@ -1,85 +1,118 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register Caretaker</title>
-    @vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="container py-4">
+@extends('layouts.landlord')
 
-<h2>Register Caretaker</h2>
+@section('title', 'Caretakers')
 
-<div class="card p-3">
+@section('content')
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Caretakers</h1>
+            <p class="text-muted mb-0">Manage caretakers assigned to your properties</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCaretakerModal">
+            <i class="fas fa-plus me-2"></i> Assign Caretaker
+        </button>
+    </div>
 
-    <input id="name" class="form-control mb-2" placeholder="Name">
+    <div class="card panel">
+        <div class="card-body">
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Search caretakers...">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <select class="form-select">
+                        <option value="">All Properties</option>
+                        <option value="1">Riverside Apartments</option>
+                        <option value="2">Sunset Villas</option>
+                    </select>
+                    <select class="form-select">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="on_leave">On Leave</option>
+                    </select>
+                </div>
+            </div>
 
-    <input id="phone" class="form-control mb-2" placeholder="Phone">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Caretaker</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Assigned Properties</th>
+                            <th>Tasks</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $caretakers = [
+                                [
+                                    'name' => 'James Caretaker',
+                                    'email' => 'james@caretaker.com',
+                                    'phone' => '+254 712 345 678',
+                                    'properties' => 3,
+                                    'tasks' => 12,
+                                    'status' => 'active',
+                                ],
+                                [
+                                    'name' => 'Mary John',
+                                    'email' => 'mary@caretaker.com',
+                                    'phone' => '+254 723 456 789',
+                                    'properties' => 2,
+                                    'tasks' => 8,
+                                    'status' => 'active',
+                                ],
+                                [
+                                    'name' => 'Peter Ochieng',
+                                    'email' => 'peter@caretaker.com',
+                                    'phone' => '+254 734 567 890',
+                                    'properties' => 1,
+                                    'tasks' => 5,
+                                    'status' => 'on_leave',
+                                ],
+                            ];
+                        @endphp
 
-    <input id="email" class="form-control mb-2" placeholder="Email">
+                        @foreach ($caretakers as $caretaker)
+                            <tr>
+                                <td class="fw-semibold">{{ $caretaker['name'] }}</td>
+                                <td>{{ $caretaker['email'] }}</td>
+                                <td>{{ $caretaker['phone'] }}</td>
+                                <td>{{ $caretaker['properties'] }}</td>
+                                <td>{{ $caretaker['tasks'] }}</td>
+                                <td>
+                                    <span
+                                        class="status-indicator {{ $caretaker['status'] === 'on_leave' ? 'inactive' : $caretaker['status'] }}">
+                                        <span class="dot"></span>
+                                        {{ ucfirst(str_replace('_', ' ', $caretaker['status'])) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button class="btn btn-sm btn-outline-primary" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" title="Remove">
+                                            <i class="fas fa-user-minus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-    <input id="password" type="password"
-           class="form-control mb-2"
-           placeholder="Password">
-
-    <input id="password_confirmation"
-           type="password"
-           class="form-control mb-2"
-           placeholder="Confirm Password">
-
-    <button class="btn btn-success"
-            onclick="registerCaretaker()">
-        Register
-    </button>
-
-</div>
-
-<p id="message"></p>
-
-<script>
-
-const sessionToken = @json(session('api_token'));
-
-if (sessionToken) {
-    localStorage.setItem('token', sessionToken);
-}
-
-const token = localStorage.getItem('token');
-
-async function registerCaretaker(){
-
-    const response =
-    await fetch('/api/caretakers',{
-
-        method:'POST',
-
-        headers:{
-            'Content-Type':'application/json',
-            Authorization:`Bearer ${token}`
-        },
-
-        body:JSON.stringify({
-
-            name:document.getElementById('name').value,
-
-            phone:document.getElementById('phone').value,
-
-            email:document.getElementById('email').value,
-
-            password:document.getElementById('password').value,
-
-            password_confirmation:
-            document.getElementById(
-                'password_confirmation'
-            ).value
-        })
-    });
-
-    const data = await response.json();
-
-    document.getElementById('message')
-        .innerText = data.message;
-}
-
-</script>
-
-</body>
-</html>
+            <x-tables.pagination currentPage="1" totalPages="1" totalItems="3" perPage="10" />
+        </div>
+    </div>
+@endsection

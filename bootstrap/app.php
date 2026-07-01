@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'auth.custom' => \App\Http\Middleware\AuthenticateMiddleware::class,
+            'activity.log' => \App\Http\Middleware\LogActivityMiddleware::class,
+            'offline.sync' => \App\Http\Middleware\OfflineSync::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
